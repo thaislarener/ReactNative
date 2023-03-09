@@ -25,13 +25,15 @@ export function Groups() {
       setIsLoading(true);
 
       const data = await groupsGetAll();
-      setGroups(data);
 
-      setIsLoading(false);
+      setGroups(data);
     }
     catch(error){
       console.log(error);
       Alert.alert('Turmas', 'Não foi possível carregar as turmas');
+    }
+    finally{
+      setIsLoading(false);
     }
   }
 
