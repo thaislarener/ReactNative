@@ -15,6 +15,7 @@ import { Input } from '@components/Input';
 import { Filter } from '@components/Filter';
 import { Button } from '@components/Button';
 import { Header } from '@components/Header';
+import { Loading } from '@components/Loading';
 import { Highlight } from '@components/Highlight';
 import { ListEmpty } from '@components/ListEmpty';
 import { ButtonIcon } from '@components/ButtonIcon';
@@ -25,6 +26,7 @@ type RouteParams = {
 }
 
 export function Players(){
+    const [isLoading, setIsLoading] = useState(true);
     const [newPlayerName, setNewPlayerName] = useState('');
     const [team, setTeam] = useState('time a');
     const [players, setPlayers] = useState<PlayerStorageDTO[]>([]);
@@ -47,6 +49,7 @@ export function Players(){
         try{
             await playerAddByGroup(newPlayer, group);
 
+            //Tira foco do input
             newPlayerNameInputRef.current?.blur();
             setNewPlayerName('');
             fetchPlayersByTeam();
@@ -63,8 +66,10 @@ export function Players(){
 
     async function fetchPlayersByTeam(){
         try{
+            setIsLoading(true);
             const playersByTeam = await playersGetByGroupAndTeam(group, team);
             setPlayers(playersByTeam);
+            setIsLoading(false);
         }
         catch(error){
             console.log(error);
@@ -104,6 +109,7 @@ export function Players(){
                 {text: 'Sim', onPress: () => groupRemove()}
             ]);
     }
+    
     useEffect(( )=> {
         fetchPlayersByTeam();
     }, [team]);
@@ -152,27 +158,31 @@ export function Players(){
                     {players.length}
                 </NumberOfPlayers>
             </HeaderList>
-
-            <FlatList
-                data={players}
-                keyExtractor={item => item.name}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => (
-                    <PlayerCard 
-                        name={item.name}
-                        onRemove={() => handlePlayerRemove(item.name)}
-                    />
-                )}
-                ListEmptyComponent={() => (
-                    <ListEmpty 
-                      message='Não há pessoas nesse time'
-                    />
-                )}
-                contentContainerStyle={[
-                    {paddingBottom: 100 },
-                    players.length === 0 && { flex: 1}
-                ]}
-            />
+            
+            {
+                isLoading ? <Loading/> :
+            
+                <FlatList
+                    data={players}
+                    keyExtractor={item => item.name}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => (
+                        <PlayerCard 
+                            name={item.name}
+                            onRemove={() => handlePlayerRemove(item.name)}
+                        />
+                    )}
+                    ListEmptyComponent={() => (
+                        <ListEmpty 
+                        message='Não há pessoas nesse time'
+                        />
+                    )}
+                    contentContainerStyle={[
+                        {paddingBottom: 100 },
+                        players.length === 0 && { flex: 1}
+                    ]}
+                />
+        }
 
             <Button
                 title='Remover Turma'
